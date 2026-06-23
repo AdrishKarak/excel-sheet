@@ -1,0 +1,75 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a user in the SmartTable application",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Table": {
+      "title": "Table",
+      "description": "Represents a user's custom table metadata",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "lastUpdated": { "type": "number" },
+        "isFavorite": { "type": "boolean" },
+        "duplicateOf": { "type": "string" }
+      },
+      "required": ["name", "createdBy", "createdAt", "lastUpdated"]
+    },
+    "Column": {
+      "title": "Column",
+      "description": "Defines a field of a dynamic table",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["text", "number", "date", "email", "phone", "dropdown", "checkbox"] },
+        "options": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "order": { "type": "number" }
+      },
+      "required": ["id", "name", "type", "createdAt", "order"]
+    },
+    "Row": {
+      "title": "Row",
+      "description": "Represents a data row inside a dynamic table",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "cells": { "type": "object" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "cells", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores basic user profiles synced with auth state"
+    },
+    "/tables/{tableId}": {
+      "schema": { "$ref": "#/entities/Table" },
+      "description": "Top-level metadata for custom tables created by users"
+    },
+    "/tables/{tableId}/columns/{columnId}": {
+      "schema": { "$ref": "#/entities/Column" },
+      "description": "Subcollection storing definitions of table headers"
+    },
+    "/tables/{tableId}/rows/{rowId}": {
+      "schema": { "$ref": "#/entities/Row" },
+      "description": "Subcollection storing individual data rows"
+    }
+  }
+}

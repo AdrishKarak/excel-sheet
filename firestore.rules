@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_-]+$');
+    }
+
+    function getTable(tableId) {
+      return get(/databases/$(database)/documents/tables/$(tableId));
+    }
+
+    function isTableOwner(tableId) {
+      return isSignedIn() && getTable(tableId).data.createdBy == request.auth.uid;
+    }
+
+    // Entity validations
+    function isValidUser(data) {
+      return data.uid == request.auth.uid
+        && data.email is string
+        && data.email.size() <= 256;
+    }
+
+    function isValidTable(data) {
+      return data.name is string 
+        && data.name.size() > 0 
+        && data.name.size() <= 100
+        && data.createdBy == request.auth.uid;
+    }
+
+    function isValidColumn(data) {
+      return data.id is string
+        && data.name is string
+        && data.name.size() > 0
+        && data.name.size() <= 100
+        && data.type is string
+        && (data.type == 'text' || data.type == 'number' || data.type == 'date' || data.type == 'email' || data.type == 'phone' || data.type == 'dropdown' || data.type == 'checkbox')
+        && data.order is number;
+    }
+
+    function isValidRow(data) {
+      return data.id is string;
+    }
+
+    // 2. Users Collection
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidUser(request.resource.data);
+      allow delete: if isOwner(userId);
+    }
+
+    // 3. Tables Collection
+    match /tables/{tableId} {
+      allow get: if isSignedIn() && resource.data.createdBy == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.createdBy == request.auth.uid;
+      
+      allow create: if isSignedIn() 
+        && isValidId(tableId) 
+        && isValidTable(request.resource.data)
+        && request.resource.data.createdBy == request.auth.uid;
+        
+      allow update: if isSignedIn() 
+        && resource.data.createdBy == request.auth.uid
+        && isValidTable(request.resource.data)
+        && request.resource.data.createdBy == request.auth.uid;
+        
+      allow delete: if isSignedIn() 
+        && resource.data.createdBy == request.auth.uid;
+
+      // 4. Columns Subcollection
+      match /columns/{columnId} {
+        allow read, list: if isTableOwner(tableId);
+        allow create, update: if isTableOwner(tableId) 
+          && isValidId(columnId) 
+          && isValidColumn(request.resource.data);
+        allow delete: if isTableOwner(tableId);
+      }
+
+      // 5. Rows Subcollection
+      match /rows/{rowId} {
+        allow read, list: if isTableOwner(tableId);
+        allow create, update: if isTableOwner(tableId) 
+          && isValidId(rowId) 
+          && isValidRow(request.resource.data);
+        allow delete: if isTableOwner(tableId);
+      }
+    }
+  }
+}
