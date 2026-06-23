@@ -4,10 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/generate-firebase-config.js",
     "dev": "vite --port=3000 --host=0.0.0.0",
+    "prebuild": "node scripts/generate-firebase-config.js",
     "build": "vite build",
     "preview": "vite preview",
-    "clean": "rm -rf dist server.js",
+    "clean": "rm -rf dist server.js firebase-applet-config.json",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

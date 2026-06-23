@@ -3,19 +3,19 @@ import { getAuth } from 'firebase/auth';
 import { initializeFirestore, doc, getDocFromServer } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAF2PxMAlahyBGMfrOlS-vKhq8kChZMHuw",
-  authDomain: "gen-lang-client-0654301392.firebaseapp.com",
-  projectId: "gen-lang-client-0654301392",
-  storageBucket: "gen-lang-client-0654301392.firebasestorage.app",
-  messagingSenderId: "1053097709177",
-  appId: "1:1053097709177:web:76fe20da2ee6f96f370ea8"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialize Firebase App
 export const app = initializeApp(firebaseConfig);
 
 // Initialize Firestore with specific database ID
-export const db = initializeFirestore(app, {}, "ai-studio-cc69906d-eeaa-479a-ac34-38613fb4c7b2");
+export const db = initializeFirestore(app, {}, import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID);
 
 // Initialize Auth
 export const auth = getAuth(app);
